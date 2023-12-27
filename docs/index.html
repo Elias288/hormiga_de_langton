@@ -9,19 +9,19 @@
 </head>
 
 <body>
-    <div class="titulo">
+    <header>
         <h1>Hormiga de Langton</h1>
-    </div>
-    <div class="contenedor">
-        <div class="botonera">
-            <div class="controles">
+    </header>
+    <main>
+        <menu>
+            <div>
                 <p>Generacion: <span id="generacion">0</span></p>
                 <button id="btnPausa">Iniciar</button>
                 <button id="btnClear">Clear</button>
 
                 <div class="rangeContainer">
                     <p>Tamaño: <span id="rangeSpanSize">0</span></p>
-                    <input type="range" name="range_size" id="range_size" min="5" max="33" value="15"
+                    <input type="range" name="range_size" id="range_size" min="9" max="33" value="15"
                         oninput="onRangeSizeChange(this.value)">
                 </div>
 
@@ -32,18 +32,18 @@
                 </div>
 
                 <div class="teclado">
-                    <p>Preciona espacio para avanzar 1 generacion</p>
+                    <p>Preciona la tecla "flecha para arriba" para avanzar 1 generacion</p>
                 </div>
             </div>
-        </div>
+        </menu>
 
-        <div class="content">
+        <section>
             <div class="pantalla">
                 <canvas id="canvas"></canvas>
             </div>
-        </div>
-    </div>
-    <div class=" reglas">
+        </section>
+    </main>
+    <footer>
         <h2>Reglas</h2>
 
         <ul>
@@ -52,8 +52,8 @@
             <li> 2 - Si está sobre un cuadrado negro, cambia el color del cuadrado, gira noventa grados a la
                 derecha y avanza un cuadrado.</li>
         </ul>
-    </div>
-    <script src="index.js"></script>
+        </f>
+        <script src="index.js"></script>
 </body>
 
 </html>

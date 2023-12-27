@@ -8,24 +8,24 @@ body {
   background: darkgrey;
 }
 
-.titulo {
+header {
   padding: 5px 10px;
   box-sizing: border-box;
 }
 
-.botonera {
+menu {
   background-color: rgb(87, 87, 87);
   padding: 30px 20px;
   margin-bottom: 20px;
 }
 
-.botonera p,
-.botonera span {
+menu p,
+menu span {
   color: #fff;
   margin-bottom: 10px;
 }
 
-.botonera button {
+menu button {
   padding-top: 10px;
   padding-bottom: 10px;
 
@@ -34,40 +34,40 @@ body {
   font-size: 1rem;
 }
 
-.botonera #btnClear {
+menu #btnClear {
   background-color: rgba(201, 0, 0, 0.482);
   color: #fff;
 }
 
-.botonera .controles {
+menu > div {
   width: inherit;
   display: flex;
   flex-direction: column;
 }
 
-.controles .rangeContainer {
+menu > div .rangeContainer {
   width: 100%;
   margin-bottom: 30px;
   padding: 0 40px;
   box-sizing: border-box;
 }
 
-.controles .rangeContainer input {
+menu > div .rangeContainer input {
   width: 100%;
 }
 
-.controles .teclado {
+menu > div .teclado {
   display: none;
 }
 
-.content {
+section {
   padding: 20px;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
 }
 
-.content .pantalla {
+section .pantalla {
   overflow: auto;
 }
 
@@ -75,8 +75,7 @@ canvas {
   background: #fff;
 }
 
-.reglas {
-  height: 120px;
+footer {
   padding: 0 20px;
   box-sizing: border-box;
   padding-left: 40px;
@@ -85,54 +84,55 @@ canvas {
 }
 
 @media screen and (min-width: 550px) {
-  .botonera {
+  menu {
     display: flex;
     justify-content: center;
     flex-direction: column;
     align-items: center;
   }
-  .botonera .controles {
+  menu > div {
     width: 510px;
   }
 }
 
 @media screen and (min-width: 800px) {
-  .titulo {
+  header {
     height: 50px;
   }
 
-  .contenedor {
+  main {
     height: calc(100vh - 170px - 3rem);
     display: flex;
     flex-direction: row-reverse;
     margin-bottom: 3rem;
   }
 
-  .botonera {
+  menu {
     justify-content: start;
     margin-bottom: 0;
   }
 
-  .botonera .controles {
-    width: auto;
+  menu > div {
+    width: 300px;
   }
 
-  .content {
+  section {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
-  .controles .rangeContainer {
+  menu > div .rangeContainer {
     padding: 0;
   }
 
-  .controles .teclado {
+  menu > div .teclado {
     display: block;
   }
 
-  .reglas {
+  footer {
     margin: 0;
+    height: 120px;
   }
 }

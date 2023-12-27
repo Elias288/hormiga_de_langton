@@ -373,7 +373,7 @@ btnPausa.addEventListener("click", () => game.togglePausa());
 
 function procesarDown(evt) {
   switch (evt.code) {
-    case "Space":
+    case "ArrowUp":
       game.nextGeneration();
       game.pintarCuadros();
       break;
