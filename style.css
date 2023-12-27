@@ -1,63 +1,64 @@
-*, * > *{
-    padding: 0;
-    margin: 0;
-    list-style: none;
+*,
+* > * {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+body {
+  background: darkgrey;
+  display: flex;
+  justify-content: center;
+}
+
+.contenedor {
+  display: flex;
+  align-items: stretch;
+  margin: 20px;
+  width: min-content;
+}
+
+canvas {
+  display: block;
+  background: #fff;
+}
+
+.botonera {
+  background-color: rgb(87, 87, 87);
+  width: 150px;
+  padding: 30px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+}
+
+.botonera p {
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.botonera button {
+  height: 30px;
+}
+
+.botonera .clear {
+  background-color: rgb(201, 0, 0);
+  color: #fff;
+}
+
+.botonera .controles {
+  width: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 700px) {
+  .contenedor {
+    flex-direction: column-reverse;
   }
-  
-  body{
-    background: darkgrey;
-    display: flex;
-    justify-content: center;
+  .botonera {
+    width: auto;
+    flex-direction: initial;
+    flex-wrap: wrap;
   }
-  
-  .contenedor{
-    display: flex;
-    align-items: stretch;
-    margin: 20px;
-    width: min-content;
-  }
-    
-  canvas{
-    display: block;
-    background: #fff;
-  }
-  
-  .botonera{
-    background-color: rgb(87, 87, 87);
-    width: 150px;
-    padding: 30px 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: baseline;
-  }
-  
-  .botonera p{
-    color: #fff;
-    margin-bottom: 10px;
-  }
-  
-  .botonera button{
-    height: 30px;
-  }
-  
-  .botonera .clear{
-    background-color: rgb(201, 0, 0);
-    color: #fff;
-  }
-  
-  .botonera .controles{
-    width: inherit;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  @media (max-width: 700px) {
-    .contenedor{
-      flex-direction: column-reverse;
-    }
-    .botonera{
-      width: auto;
-      flex-direction: initial;
-      flex-wrap: wrap;
-    }
-  }
+}
