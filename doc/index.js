@@ -1,26 +1,10 @@
 // @ts-check
 
-/** @type {HTMLCanvasElement} */
-const doc_canvas = document.querySelector("canvas"),
-  /** @type {CanvasRenderingContext2D } */
-  doc_ctx = doc_canvas.getContext("2d"),
-  canvas_width = doc_canvas.width,
-  canvas_height = doc_canvas.height,
-  /** @type {HTMLElement} */
-  doc_generacion = document.getElementById("generacion"),
-  doc_btnPausa = document.getElementById("btnPausa"),
-  doc_btnClear = document.getElementById("btnClear");
-
-const SIZES = { ancho: 15, alto: 15 };
-const CANT_CUADROS_HORIZONTAL = canvas_width / SIZES.ancho;
-const CANT_CUADROS_VERTICAL = canvas_height / SIZES.alto;
-const TIEMPO_POR_FRAME = 10;
-const CANT_CUADROS_TOTALES = CANT_CUADROS_HORIZONTAL * CANT_CUADROS_VERTICAL;
-
+const BLOCK_SIZES = { ancho: 15, alto: 15 };
 const ESTADOS = {
-  VIVO: "#FF0000",
-  MUERTO: "#000000",
-  BACKGROUND: "#FFFFFF",
+  VIVO: "rgb(255, 0, 0)",
+  MUERTO: "rgb(0, 0, 0)",
+  BACKGROUND: "rgb(255, 255, 255)",
 };
 const DIRECTIONS = {
   ARRIBA: 0,
@@ -28,6 +12,35 @@ const DIRECTIONS = {
   ABAJO: 180,
   IZQUIERDA: 270,
 };
+
+/** @type {HTMLCanvasElement} */
+const doc_canvas = document.querySelector("canvas"),
+  /** @type {CanvasRenderingContext2D } */
+  doc_ctx = doc_canvas.getContext("2d"),
+  /** @type {HTMLElement} */
+  doc_generacion = document.getElementById("generacion"),
+  /** @type {HTMLElement} */
+  doc_btnPausa = document.getElementById("btnPausa"),
+  /** @type {HTMLElement} */
+  doc_btnClear = document.getElementById("btnClear"),
+  /** @type {HTMLElement} */
+  doc_rangeSize = document.getElementById("range_size"),
+  /** @type {HTMLElement} */
+  doc_rangeOutputSize = document.getElementById("rangeSpanSize"),
+  /** @type {HTMLElement} */
+  doc_range_time = document.getElementById("range_time"),
+  /** @type {HTMLElement} */
+  doc_rangeOutputTime = document.getElementById("rangeSpanTime");
+
+/** @type {number} */
+var CANVAS_SIZE = 225;
+doc_canvas.width = CANVAS_SIZE;
+doc_canvas.height = CANVAS_SIZE;
+doc_rangeOutputSize.innerHTML = String(CANVAS_SIZE / 15);
+
+/** @type {number} */
+var TIEMPO_POR_FRAME = 500;
+doc_rangeOutputTime.innerHTML = String(TIEMPO_POR_FRAME);
 
 /**
  * @typedef {Object} Cuadrito
@@ -74,6 +87,7 @@ class Game {
    * Funcion que dibuja la grilla y los carga en la lista cuadritos
    */
   initialGrill() {
+    this.cuadritos = [];
     let columnas = [],
       filas = [],
       contador = 0;
@@ -82,10 +96,10 @@ class Game {
 
     // construir columnas
     columnas.push(0);
-    for (let i = SIZES.ancho; i < canvas_width; i += SIZES.ancho) {
+    for (let i = BLOCK_SIZES.ancho; i < CANVAS_SIZE; i += BLOCK_SIZES.ancho) {
       doc_ctx.beginPath();
       doc_ctx.moveTo(i, 0);
-      doc_ctx.lineTo(i, canvas_height);
+      doc_ctx.lineTo(i, CANVAS_SIZE);
       doc_ctx.stroke();
       columnas.push(i);
     }
@@ -93,10 +107,10 @@ class Game {
 
     // construir filas
     filas.push(0);
-    for (let i = SIZES.alto; i < canvas_height; i += SIZES.alto) {
+    for (let i = BLOCK_SIZES.alto; i < CANVAS_SIZE; i += BLOCK_SIZES.alto) {
       doc_ctx.beginPath();
       doc_ctx.moveTo(0, i);
-      doc_ctx.lineTo(canvas_width, i);
+      doc_ctx.lineTo(CANVAS_SIZE, i);
       doc_ctx.stroke();
       filas.push(i);
     }
@@ -133,8 +147,8 @@ class Game {
           doc_ctx.fillRect(
             cuadro.x_position,
             cuadro.y_position,
-            SIZES.ancho,
-            SIZES.alto
+            BLOCK_SIZES.ancho,
+            BLOCK_SIZES.alto
           );
           // console.log(JSON.stringify(cuadro, null, 4));
           break;
@@ -143,8 +157,8 @@ class Game {
           doc_ctx.fillRect(
             cuadro.x_position,
             cuadro.y_position,
-            SIZES.ancho,
-            SIZES.alto
+            BLOCK_SIZES.ancho,
+            BLOCK_SIZES.alto
           );
           break;
         case ESTADOS.BACKGROUND:
@@ -152,17 +166,17 @@ class Game {
           doc_ctx.fillRect(
             cuadro.x_position,
             cuadro.y_position,
-            SIZES.ancho,
-            SIZES.alto
+            BLOCK_SIZES.ancho,
+            BLOCK_SIZES.alto
           );
 
           // lineas
-          doc_ctx.strokeStyle = "#a2a2a2";
+          doc_ctx.strokeStyle = "rgb(245, 245, 245)";
           doc_ctx.strokeRect(
             cuadro.x_position,
             cuadro.y_position,
-            SIZES.ancho,
-            SIZES.alto
+            BLOCK_SIZES.ancho,
+            BLOCK_SIZES.alto
           );
           break;
 
@@ -285,13 +299,13 @@ class Game {
   buscarSiguienteHormiga(direccion, x, y) {
     switch (direccion) {
       case DIRECTIONS.ARRIBA:
-        return this.buscarPorCoordenadas(x, y - SIZES.alto);
+        return this.buscarPorCoordenadas(x, y - BLOCK_SIZES.alto);
       case DIRECTIONS.DERECHA:
-        return this.buscarPorCoordenadas(x + SIZES.ancho, y);
+        return this.buscarPorCoordenadas(x + BLOCK_SIZES.ancho, y);
       case DIRECTIONS.ABAJO:
-        return this.buscarPorCoordenadas(x, y + SIZES.alto);
+        return this.buscarPorCoordenadas(x, y + BLOCK_SIZES.alto);
       case DIRECTIONS.IZQUIERDA:
-        return this.buscarPorCoordenadas(x - SIZES.ancho, y);
+        return this.buscarPorCoordenadas(x - BLOCK_SIZES.ancho, y);
     }
   }
 
@@ -321,24 +335,36 @@ class Game {
   }
 
   clearAll() {
+    this.isPausa = true;
+    btnPausa.innerHTML = "Iniciar";
+
     this.generacion = 0;
     this.isPausa = true;
     doc_generacion.textContent = "0";
 
-    doc_ctx.clearRect(0, 0, canvas_width, canvas_height);
-    this.initialGrill();
-    this.changeStateOfCuadrito(
-      Math.round(CANT_CUADROS_TOTALES / 2),
-      ESTADOS.VIVO
-    );
-    this.pintarCuadros();
+    setTimeout(() => {
+      doc_ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      this.initialGrill();
+      this.changeStateOfCuadrito(this.calculateMiddle(), ESTADOS.VIVO);
+      this.pintarCuadros();
+    }, 50);
+  }
+
+  /**
+   * Funcion que calcula la posicion del cuadro central
+   * @returns {number}
+   */
+  calculateMiddle() {
+    return Math.floor(Math.pow(CANVAS_SIZE / 15, 2) / 2);
   }
 }
 
 const game = new Game();
 game.initialGrill();
-// console.log(Math.round(CANT_CUADROS_TOTALES / 2));
-game.changeStateOfCuadrito(Math.round(CANT_CUADROS_TOTALES / 2), ESTADOS.VIVO);
+
+// console.log(game.calculateMiddle());
+
+game.changeStateOfCuadrito(game.calculateMiddle(), ESTADOS.VIVO);
 
 window.requestAnimationFrame(() => game.gameLoop());
 
@@ -354,3 +380,22 @@ function procesarDown(evt) {
   }
 }
 document.addEventListener("keydown", procesarDown);
+
+const onRangeSizeChange = (value) => {
+  if (Math.floor((value * 15) % 2) !== 0) {
+    game.clearAll();
+    doc_rangeOutputSize.innerHTML = value;
+    CANVAS_SIZE = value * 15;
+    doc_canvas.width = value * 15;
+    doc_canvas.height = value * 15;
+
+    game.initialGrill();
+    game.changeStateOfCuadrito(game.calculateMiddle(), ESTADOS.VIVO);
+    game.pintarCuadros();
+  }
+};
+
+const onRangeTimeChange = (value) => {
+  TIEMPO_POR_FRAME = 1020 - value;
+  doc_rangeOutputTime.innerHTML = String(1020 - value);
+};

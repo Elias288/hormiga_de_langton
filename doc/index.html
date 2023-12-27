@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Hormiga de Langton</title>
+</head>
+
+<body>
+    <div class="titulo">
+        <h1>Hormiga de Langton</h1>
+    </div>
+    <div class="contenedor">
+        <div class="botonera">
+            <div class="controles">
+                <p>Generacion: <span id="generacion">0</span></p>
+                <button id="btnPausa">Iniciar</button>
+                <button id="btnClear">Clear</button>
+
+                <div class="rangeContainer">
+                    <p>Tamaño: <span id="rangeSpanSize">0</span></p>
+                    <input type="range" name="range_size" id="range_size" min="5" max="33" value="15"
+                        oninput="onRangeSizeChange(this.value)">
+                </div>
+
+                <div class="rangeContainer">
+                    <p>Velociadd: <span id="rangeSpanTime">0</span>ms</p>
+                    <input type="range" name="range_time" id="range_time" min="20" max="1000" step="10" value="500"
+                        oninput="onRangeTimeChange(this.value)">
+                </div>
+
+                <div class="teclado">
+                    <p>Preciona espacio para avanzar 1 generacion</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="pantalla">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class=" reglas">
+        <h2>Reglas</h2>
+
+        <ul>
+            <li>1 - Si está sobre un cuadrado blanco, cambia el color del cuadrado, gira noventa grados a la
+                izquierda y avanza un cuadrado.</li>
+            <li> 2 - Si está sobre un cuadrado negro, cambia el color del cuadrado, gira noventa grados a la
+                derecha y avanza un cuadrado.</li>
+        </ul>
+    </div>
+    <script src="index.js"></script>
+</body>
+
+</html>
