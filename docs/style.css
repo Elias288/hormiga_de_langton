@@ -67,12 +67,10 @@ section {
   justify-content: center;
 }
 
-section .pantalla {
-  overflow: auto;
-}
-
 canvas {
   background: #fff;
+  width: 300px;
+  height: 300px;
 }
 
 footer {
@@ -119,8 +117,16 @@ footer {
   section {
     flex: 1;
     display: flex;
-    justify-content: center;
     align-items: center;
+  }
+
+  section .pantalla {
+    display: flex;
+  }
+
+  canvas {
+    width: 500px;
+    height: 500px;
   }
 
   menu > div .rangeContainer {

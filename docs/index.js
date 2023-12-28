@@ -1,6 +1,7 @@
 // @ts-check
 
-const BLOCK_SIZES = { ancho: 15, alto: 15 };
+const MAX_FRAME_TIME = 1010;
+const ANT_SIZE = 15;
 const ESTADOS = {
   VIVO: "rgb(255, 0, 0)",
   MUERTO: "rgb(0, 0, 0)",
@@ -42,26 +43,47 @@ doc_rangeOutputSize.innerHTML = String(CANVAS_SIZE / 15);
 var TIEMPO_POR_FRAME = 500;
 doc_rangeOutputTime.innerHTML = String(TIEMPO_POR_FRAME);
 
-/**
- * @typedef {Object} Cuadrito
- * @property {number} x_position
- * @property {number} y_position
- * @property {number} number
- * @property {string} estate
- * @property {number} direction
- * @property {boolean} onBackground
- */
+class Block {
+  /**
+   * Block builder
+   * @param {number} x Position x on the grid
+   * @param {number} y Position y on the grid
+   * @param {number} num Number assigned to the block
+   * @param {number} size Block size
+   */
+  constructor(x, y, num, size) {
+    /** @type {number} */
+    this.x_position = x;
+    /** @type {number} */
+    this.y_position = y;
+    /** @type {number} */
+    this.number = num;
+    /** @type {number} */
+    this.size = size;
+    /** @type {number} */
+    this.direction = DIRECTIONS.ARRIBA;
+    /** @type {string} */
+    this.state = ESTADOS.BACKGROUND;
+    /** @type {boolean} */
+    this.onBackground = true;
+  }
+
+  /**
+   * Change state of block
+   * @param {string} state New state of Block
+   */
+  changeState(state) {
+    this.state = state;
+  }
+}
 
 /**
  * @class
  */
 class Game {
   constructor() {
-    /** @type {Cuadrito[]} */
+    /** @type {Block[]} */
     this.cuadritos = [];
-
-    /** @type {number} */
-    this.cuadrosAlRededor = 0;
 
     /** @type {number} */
     this.generacion = 0;
@@ -87,6 +109,7 @@ class Game {
    * Funcion que dibuja la grilla y los carga en la lista cuadritos
    */
   initialGrill() {
+    // reset the grid
     this.cuadritos = [];
     let columnas = [],
       filas = [],
@@ -96,7 +119,7 @@ class Game {
 
     // construir columnas
     columnas.push(0);
-    for (let i = BLOCK_SIZES.ancho; i < CANVAS_SIZE; i += BLOCK_SIZES.ancho) {
+    for (let i = ANT_SIZE; i < CANVAS_SIZE; i += ANT_SIZE) {
       doc_ctx.beginPath();
       doc_ctx.moveTo(i, 0);
       doc_ctx.lineTo(i, CANVAS_SIZE);
@@ -107,7 +130,7 @@ class Game {
 
     // construir filas
     filas.push(0);
-    for (let i = BLOCK_SIZES.alto; i < CANVAS_SIZE; i += BLOCK_SIZES.alto) {
+    for (let i = ANT_SIZE; i < CANVAS_SIZE; i += ANT_SIZE) {
       doc_ctx.beginPath();
       doc_ctx.moveTo(0, i);
       doc_ctx.lineTo(CANVAS_SIZE, i);
@@ -119,15 +142,7 @@ class Game {
     // cargar filas y columnas al juego
     for (let y = 0; y < filas.length; y++) {
       for (let x = 0; x < columnas.length; x++) {
-        /** @type {Cuadrito} */
-        const cuadrito = {
-          x_position: columnas[x],
-          y_position: filas[y],
-          number: contador,
-          direction: DIRECTIONS.ARRIBA,
-          estate: ESTADOS.BACKGROUND,
-          onBackground: true,
-        };
+        const cuadrito = new Block(columnas[x], filas[y], contador, ANT_SIZE);
         contador++;
         this.cuadritos.push(cuadrito);
       }
@@ -141,14 +156,14 @@ class Game {
    */
   pintarCuadros() {
     this.cuadritos.forEach((cuadro) => {
-      switch (cuadro.estate) {
+      switch (cuadro.state) {
         case ESTADOS.VIVO:
           doc_ctx.fillStyle = ESTADOS.VIVO;
           doc_ctx.fillRect(
             cuadro.x_position,
             cuadro.y_position,
-            BLOCK_SIZES.ancho,
-            BLOCK_SIZES.alto
+            ANT_SIZE,
+            ANT_SIZE
           );
           // console.log(JSON.stringify(cuadro, null, 4));
           break;
@@ -157,8 +172,8 @@ class Game {
           doc_ctx.fillRect(
             cuadro.x_position,
             cuadro.y_position,
-            BLOCK_SIZES.ancho,
-            BLOCK_SIZES.alto
+            ANT_SIZE,
+            ANT_SIZE
           );
           break;
         case ESTADOS.BACKGROUND:
@@ -166,8 +181,8 @@ class Game {
           doc_ctx.fillRect(
             cuadro.x_position,
             cuadro.y_position,
-            BLOCK_SIZES.ancho,
-            BLOCK_SIZES.alto
+            ANT_SIZE,
+            ANT_SIZE
           );
 
           // lineas
@@ -175,8 +190,8 @@ class Game {
           doc_ctx.strokeRect(
             cuadro.x_position,
             cuadro.y_position,
-            BLOCK_SIZES.ancho,
-            BLOCK_SIZES.alto
+            ANT_SIZE,
+            ANT_SIZE
           );
           break;
 
@@ -187,15 +202,18 @@ class Game {
   }
 
   /**
-   *
+   * Searches and changes the status of a block in the grid.
    * @param {number} numero_de_cuadrito posicion del cuadrito al que se le va a cambiar el estado
    * @param {string} estado nuevo estado para el cuadrito
    */
   changeStateOfCuadrito(numero_de_cuadrito, estado) {
     const newCuadritos = this.cuadritos.map((cuadrito) => {
-      return cuadrito.number === numero_de_cuadrito
-        ? { ...cuadrito, estate: estado }
-        : cuadrito;
+      if (cuadrito.number === numero_de_cuadrito) {
+        cuadrito.changeState(estado);
+        return cuadrito;
+      }
+
+      return cuadrito;
     });
 
     this.cuadritos = newCuadritos;
@@ -205,9 +223,9 @@ class Game {
    * se encarga de ejecutar las generaciones
    */
   nextGeneration() {
-    /** @type {Cuadrito} */
+    /** @type {Block} */
     let hormiga = this.cuadritos.find(
-      (cuadro) => cuadro.estate === ESTADOS.VIVO
+      (cuadro) => cuadro.state === ESTADOS.VIVO
     );
 
     // calcula la nueva dirección
@@ -220,7 +238,7 @@ class Game {
     );
 
     // busca la nueva posicion de la hormiga
-    /** @type {Cuadrito} */
+    /** @type {Block} */
     const nextHormiga = this.buscarSiguienteHormiga(
       newDireccion,
       hormiga.x_position,
@@ -247,7 +265,7 @@ class Game {
   /**
    * Funcion que normaliza angulos entro 0 y 360
    * @param {number} angulo Valor que se quiera normalizar a grados entre 0 y 360
-   * @returns number
+   * @returns {number}
    */
   normalizarGrados(angulo) {
     angulo = angulo % 360;
@@ -259,10 +277,10 @@ class Game {
 
   /**
    * Funcion que mapea la posicion de la hormiga
-   * @param {Cuadrito} hormiga
-   * @param {Cuadrito} nextHormiga
+   * @param {Block} hormiga
+   * @param {Block} nextHormiga
    * @param {number} direccion
-   * @returns {Array<Cuadrito>}
+   * @returns {Array<Block>}
    */
   logicaDeMovimiento(hormiga, nextHormiga, direccion) {
     return this.cuadritos.map((cuadro) => {
@@ -270,18 +288,18 @@ class Game {
       if (cuadro.number === hormiga.number) {
         // si la hormiga está sobre blanco se convierte en negro, sino vuelve a blanco
         cuadro.onBackground
-          ? (cuadro.estate = ESTADOS.MUERTO)
-          : (cuadro.estate = ESTADOS.BACKGROUND);
+          ? (cuadro.state = ESTADOS.MUERTO)
+          : (cuadro.state = ESTADOS.BACKGROUND);
       }
 
       // la siguiente posicion de la hormiga
       if (cuadro.number === nextHormiga.number) {
         // si la siguiente posicion es negro cambia el estado onBackground a false, sino true
-        cuadro.estate === ESTADOS.MUERTO
+        cuadro.state === ESTADOS.MUERTO
           ? (cuadro.onBackground = false)
           : (cuadro.onBackground = true);
 
-        cuadro.estate = ESTADOS.VIVO;
+        cuadro.state = ESTADOS.VIVO;
         cuadro.direction = direccion;
       }
 
@@ -299,13 +317,13 @@ class Game {
   buscarSiguienteHormiga(direccion, x, y) {
     switch (direccion) {
       case DIRECTIONS.ARRIBA:
-        return this.buscarPorCoordenadas(x, y - BLOCK_SIZES.alto);
+        return this.buscarPorCoordenadas(x, y - ANT_SIZE);
       case DIRECTIONS.DERECHA:
-        return this.buscarPorCoordenadas(x + BLOCK_SIZES.ancho, y);
+        return this.buscarPorCoordenadas(x + ANT_SIZE, y);
       case DIRECTIONS.ABAJO:
-        return this.buscarPorCoordenadas(x, y + BLOCK_SIZES.alto);
+        return this.buscarPorCoordenadas(x, y + ANT_SIZE);
       case DIRECTIONS.IZQUIERDA:
-        return this.buscarPorCoordenadas(x - BLOCK_SIZES.ancho, y);
+        return this.buscarPorCoordenadas(x - ANT_SIZE, y);
     }
   }
 
@@ -313,7 +331,7 @@ class Game {
    * Funcion que busca un cuadrito por sus coordenadas
    * @param {number} x Posición x
    * @param {number} y Posición y
-   * @returns {Cuadrito}
+   * @returns {Block}
    */
   buscarPorCoordenadas(x, y) {
     return this.cuadritos.find(
@@ -355,21 +373,14 @@ class Game {
    * @returns {number}
    */
   calculateMiddle() {
-    return Math.floor(Math.pow(CANVAS_SIZE / 15, 2) / 2);
+    return Math.floor(Math.pow(CANVAS_SIZE / ANT_SIZE, 2) / 2);
   }
 }
 
 const game = new Game();
+
 game.initialGrill();
-
-// console.log(game.calculateMiddle());
-
 game.changeStateOfCuadrito(game.calculateMiddle(), ESTADOS.VIVO);
-
-window.requestAnimationFrame(() => game.gameLoop());
-
-btnClear.addEventListener("click", () => game.clearAll());
-btnPausa.addEventListener("click", () => game.togglePausa());
 
 function procesarDown(evt) {
   switch (evt.code) {
@@ -379,15 +390,14 @@ function procesarDown(evt) {
       break;
   }
 }
-document.addEventListener("keydown", procesarDown);
 
 const onRangeSizeChange = (value) => {
-  if (Math.floor((value * 15) % 2) !== 0) {
+  if (Math.floor((value * ANT_SIZE) % 2) !== 0) {
     game.clearAll();
     doc_rangeOutputSize.innerHTML = value;
-    CANVAS_SIZE = value * 15;
-    doc_canvas.width = value * 15;
-    doc_canvas.height = value * 15;
+    CANVAS_SIZE = value * ANT_SIZE;
+    doc_canvas.width = value * ANT_SIZE;
+    doc_canvas.height = value * ANT_SIZE;
 
     game.initialGrill();
     game.changeStateOfCuadrito(game.calculateMiddle(), ESTADOS.VIVO);
@@ -396,6 +406,11 @@ const onRangeSizeChange = (value) => {
 };
 
 const onRangeTimeChange = (value) => {
-  TIEMPO_POR_FRAME = 1020 - value;
-  doc_rangeOutputTime.innerHTML = String(1020 - value);
+  TIEMPO_POR_FRAME = MAX_FRAME_TIME - value;
+  doc_rangeOutputTime.innerHTML = String(MAX_FRAME_TIME - value);
 };
+
+btnClear.addEventListener("click", () => game.clearAll());
+btnPausa.addEventListener("click", () => game.togglePausa());
+document.addEventListener("keydown", procesarDown);
+window.requestAnimationFrame(() => game.gameLoop());
