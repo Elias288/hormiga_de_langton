@@ -1,10 +1,10 @@
-const canvas = document.querySelector("canvas"),
-  ctx = canvas.getContext("2d"),
+const old_canvas = document.querySelector("canvas"),
+  old_ctx = canvas.getContext("2d"),
   w = canvas.width,
   h = canvas.height,
-  generacion = document.querySelector(".botonera p"),
-  btnPausa = document.getElementById("btnPausa"),
-  btnClear = document.getElementById("btnClear");
+  old_generacion = document.querySelector(".botonera p"),
+  old_btnPausa = document.getElementById("btnPausa"),
+  old_btnClear = document.getElementById("btnClear");
 
 var cuadritos = [],
   sizeCuadro = { ancho: 15, alto: 15 },
@@ -67,7 +67,7 @@ function nextGeneration() {
     }
   }
   gen++;
-  generacion.innerHTML = "Generacion: " + gen;
+  generation.innerHTML = "Generacion: " + gen;
 }
 
 function avanzar(x, y, direccion) {
@@ -197,20 +197,20 @@ dibujarCuadrilla(sizeCuadro.ancho, sizeCuadro.alto, 1, color, 1);
 Estado(594, 2);
 //Estado(0, 2);
 
-btnPausa.addEventListener("click", () => {
+old_btnPausa.addEventListener("click", () => {
   if (pausa == false) {
     pausa = true;
-    btnPausa.innerHTML = "Reanudar";
+    old_btnPausa.innerHTML = "Reanudar";
   } else {
     pausa = false;
-    btnPausa.innerHTML = "Pausa";
+    old_btnPausa.innerHTML = "Pausa";
     window.requestAnimationFrame(gameloop);
   }
 });
-btnClear.addEventListener("click", () => {
+old_btnClear.addEventListener("click", () => {
   pausa = true;
-  btnPausa.innerHTML = "Reanudar";
-  generacion.innerHTML = "Generacion: 0";
+  old_btnPausa.innerHTML = "Reanudar";
+  generation.innerHTML = "Generacion: 0";
   cuadritos.length = 0;
   gen = 0;
   ctx.clearRect(0, 0, w, h); //limpia Canvas

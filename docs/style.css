@@ -13,64 +13,71 @@ header {
   box-sizing: border-box;
 }
 
-menu {
-  background-color: rgb(87, 87, 87);
-  padding: 30px 20px;
-  margin-bottom: 20px;
-}
+main {
+  max-width: 800px;
+  min-height: 500px;
 
-menu p,
-menu span {
-  color: #fff;
-  margin-bottom: 10px;
-}
+  & menu {
+    background-color: rgb(87, 87, 87);
+    padding: 30px 20px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
 
-menu button {
-  padding-top: 10px;
-  padding-bottom: 10px;
+    & button {
+      padding-top: 10px;
+      padding-bottom: 10px;
 
-  margin-bottom: 20px;
-  border-radius: 10px;
-  font-size: 1rem;
-}
+      margin-bottom: 20px;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
 
-menu #btnClear {
-  background-color: rgba(201, 0, 0, 0.482);
-  color: #fff;
-}
+    & #btnClear {
+      background-color: rgba(201, 0, 0, 0.482);
+      color: #fff;
+    }
 
-menu > div {
-  width: inherit;
-  display: flex;
-  flex-direction: column;
-}
+    & > div {
+      width: inherit;
+      display: flex;
+      flex-direction: column;
 
-menu > div .rangeContainer {
-  width: 100%;
-  margin-bottom: 30px;
-  padding: 0 40px;
-  box-sizing: border-box;
-}
+      & p,
+      & span {
+        color: #fff;
+        margin-bottom: 10px;
+      }
 
-menu > div .rangeContainer input {
-  width: 100%;
-}
+      & .rangeContainer {
+        width: 100%;
+        margin-bottom: 30px;
+        padding: 0 40px;
+        box-sizing: border-box;
 
-menu > div .teclado {
-  display: none;
-}
+        & input {
+          width: 100%;
+        }
+      }
 
-section {
-  padding: 20px;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-}
+      & .teclado {
+        display: none;
+      }
+    }
+  }
 
-canvas {
-  background: #fff;
-  width: 300px;
-  height: 300px;
+  section {
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+
+    & canvas {
+      background: #fff;
+      width: 300px;
+      height: 300px;
+    }
+  }
 }
 
 footer {
@@ -87,9 +94,10 @@ footer {
     justify-content: center;
     flex-direction: column;
     align-items: center;
-  }
-  menu > div {
-    width: 510px;
+
+    & > div {
+      width: 510px;
+    }
   }
 }
 
@@ -99,42 +107,38 @@ footer {
   }
 
   main {
-    height: calc(100vh - 170px - 3rem);
     display: flex;
     flex-direction: row-reverse;
-    margin-bottom: 3rem;
-  }
+    margin: 1rem auto 3rem auto;
 
-  menu {
-    justify-content: start;
-    margin-bottom: 0;
-  }
+    & menu {
+      justify-content: start;
+      margin-bottom: 0;
 
-  menu > div {
-    width: 300px;
-  }
+      & > div {
+        & .rangeContainer {
+          padding: 0;
+        }
 
-  section {
-    flex: 1;
-    display: flex;
-    align-items: center;
-  }
+        & .teclado {
+          display: block;
+        }
+      }
+    }
 
-  section .pantalla {
-    display: flex;
-  }
+    & section {
+      flex: 1;
+      padding: 0 20px;
 
-  canvas {
-    width: 500px;
-    height: 500px;
-  }
+      & .pantalla {
+        display: flex;
 
-  menu > div .rangeContainer {
-    padding: 0;
-  }
-
-  menu > div .teclado {
-    display: block;
+        & canvas {
+          width: 500px;
+          height: 500px;
+        }
+      }
+    }
   }
 
   footer {

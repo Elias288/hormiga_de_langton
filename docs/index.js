@@ -1,47 +1,47 @@
 // @ts-check
 
-const MAX_FRAME_TIME = 1010;
+const MAX_FRAME_TIME = 201;
 const ANT_SIZE = 15;
-const ESTADOS = {
-  VIVO: "rgb(255, 0, 0)",
-  MUERTO: "rgb(0, 0, 0)",
+const STATES = {
+  LIVE: "rgb(255, 0, 0)",
+  DEAD: "rgb(0, 0, 0)",
   BACKGROUND: "rgb(255, 255, 255)",
 };
 const DIRECTIONS = {
-  ARRIBA: 0,
-  DERECHA: 90,
-  ABAJO: 180,
-  IZQUIERDA: 270,
+  UP: 0,
+  RIGHT: 90,
+  DOWN: 180,
+  LEFT: 270,
 };
 
 /** @type {HTMLCanvasElement} */
-const doc_canvas = document.querySelector("canvas"),
+const canvas = document.querySelector("canvas"),
   /** @type {CanvasRenderingContext2D } */
-  doc_ctx = doc_canvas.getContext("2d"),
+  ctx = canvas.getContext("2d"),
   /** @type {HTMLElement} */
-  doc_generacion = document.getElementById("generacion"),
+  generation = document.getElementById("generation"),
   /** @type {HTMLElement} */
-  doc_btnPausa = document.getElementById("btnPausa"),
+  btnStop = document.getElementById("btnStop"),
   /** @type {HTMLElement} */
-  doc_btnClear = document.getElementById("btnClear"),
+  btnClear = document.getElementById("btnClear"),
   /** @type {HTMLElement} */
-  doc_rangeSize = document.getElementById("range_size"),
+  rangeSize = document.getElementById("range_size"),
   /** @type {HTMLElement} */
-  doc_rangeOutputSize = document.getElementById("rangeSpanSize"),
+  rangeOutputSize = document.getElementById("rangeSpanSize"),
   /** @type {HTMLElement} */
-  doc_range_time = document.getElementById("range_time"),
+  range_time = document.getElementById("range_time"),
   /** @type {HTMLElement} */
-  doc_rangeOutputTime = document.getElementById("rangeSpanTime");
+  rangeOutputTime = document.getElementById("rangeSpanTime");
 
 /** @type {number} */
-var CANVAS_SIZE = 225;
-doc_canvas.width = CANVAS_SIZE;
-doc_canvas.height = CANVAS_SIZE;
-doc_rangeOutputSize.innerHTML = String(CANVAS_SIZE / 15);
+var CANVAS_SIZE = 435;
+canvas.width = CANVAS_SIZE;
+canvas.height = CANVAS_SIZE;
+rangeOutputSize.innerHTML = String(CANVAS_SIZE / 15);
 
 /** @type {number} */
-var TIEMPO_POR_FRAME = 500;
-doc_rangeOutputTime.innerHTML = String(TIEMPO_POR_FRAME);
+var FRAME_TIME = 100;
+rangeOutputTime.innerHTML = String(FRAME_TIME);
 
 class Block {
   /**
@@ -61,9 +61,9 @@ class Block {
     /** @type {number} */
     this.size = size;
     /** @type {number} */
-    this.direction = DIRECTIONS.ARRIBA;
+    this.direction = DIRECTIONS.UP;
     /** @type {string} */
-    this.state = ESTADOS.BACKGROUND;
+    this.state = STATES.BACKGROUND;
     /** @type {boolean} */
     this.onBackground = true;
   }
@@ -83,68 +83,68 @@ class Block {
 class Game {
   constructor() {
     /** @type {Block[]} */
-    this.cuadritos = [];
+    this.grid = [];
 
     /** @type {number} */
-    this.generacion = 0;
+    this.generation = 0;
 
     /** @type {boolean} */
-    this.isPausa = true;
+    this.isStop = true;
   }
 
   /**
    * Funcion que matiene ejecutando el juego dependiendo del estado isPausa
    */
   gameLoop() {
-    this.pintarCuadros();
-    if (!this.isPausa) {
+    this.drawBlocks();
+    if (!this.isStop) {
       setTimeout(() => {
         this.nextGeneration();
         window.requestAnimationFrame(() => this.gameLoop());
-      }, TIEMPO_POR_FRAME);
+      }, FRAME_TIME);
     }
   }
 
   /**
-   * Funcion que dibuja la grilla y los carga en la lista cuadritos
+   * Function that draws the grid and loads them into the game list.
    */
   initialGrill() {
     // reset the grid
-    this.cuadritos = [];
-    let columnas = [],
-      filas = [],
-      contador = 0;
-    doc_ctx.strokeStyle = ESTADOS.BACKGROUND;
-    doc_ctx.lineWidth = 1;
+    this.grid = [];
+    let columns = [],
+      rows = [],
+      counter = 0;
+    ctx.strokeStyle = STATES.BACKGROUND;
+    ctx.lineWidth = 1;
 
-    // construir columnas
-    columnas.push(0);
+    // Charge columns
+    columns.push(0);
     for (let i = ANT_SIZE; i < CANVAS_SIZE; i += ANT_SIZE) {
-      doc_ctx.beginPath();
-      doc_ctx.moveTo(i, 0);
-      doc_ctx.lineTo(i, CANVAS_SIZE);
-      doc_ctx.stroke();
-      columnas.push(i);
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, CANVAS_SIZE);
+      ctx.stroke();
+      columns.push(i);
     }
-    doc_ctx.closePath();
+    ctx.closePath();
 
-    // construir filas
-    filas.push(0);
+    // Charge rows
+    rows.push(0);
     for (let i = ANT_SIZE; i < CANVAS_SIZE; i += ANT_SIZE) {
-      doc_ctx.beginPath();
-      doc_ctx.moveTo(0, i);
-      doc_ctx.lineTo(CANVAS_SIZE, i);
-      doc_ctx.stroke();
-      filas.push(i);
+      ctx.beginPath();
+      ctx.moveTo(0, i);
+      ctx.lineTo(CANVAS_SIZE, i);
+      ctx.stroke();
+      rows.push(i);
     }
-    doc_ctx.closePath();
+    ctx.closePath();
 
-    // cargar filas y columnas al juego
-    for (let y = 0; y < filas.length; y++) {
-      for (let x = 0; x < columnas.length; x++) {
-        const cuadrito = new Block(columnas[x], filas[y], contador, ANT_SIZE);
-        contador++;
-        this.cuadritos.push(cuadrito);
+    // Combines rows and columns
+    for (let y = 0; y < rows.length; y++) {
+      for (let x = 0; x < columns.length; x++) {
+        const blocks = new Block(columns[x], rows[y], counter, ANT_SIZE);
+        counter++;
+        this.grid.push(blocks);
       }
     }
 
@@ -152,44 +152,29 @@ class Game {
   }
 
   /**
-   * Pinta del color correspondiente a los cuadraditos segun sus estados
+   * Paint the corresponding color of the blocks according to their statuses
    */
-  pintarCuadros() {
-    this.cuadritos.forEach((cuadro) => {
-      switch (cuadro.state) {
-        case ESTADOS.VIVO:
-          doc_ctx.fillStyle = ESTADOS.VIVO;
-          doc_ctx.fillRect(
-            cuadro.x_position,
-            cuadro.y_position,
-            ANT_SIZE,
-            ANT_SIZE
-          );
+  drawBlocks() {
+    this.grid.forEach((block) => {
+      switch (block.state) {
+        case STATES.LIVE:
+          ctx.fillStyle = STATES.LIVE;
+          ctx.fillRect(block.x_position, block.y_position, ANT_SIZE, ANT_SIZE);
           // console.log(JSON.stringify(cuadro, null, 4));
           break;
-        case ESTADOS.MUERTO:
-          doc_ctx.fillStyle = ESTADOS.MUERTO;
-          doc_ctx.fillRect(
-            cuadro.x_position,
-            cuadro.y_position,
-            ANT_SIZE,
-            ANT_SIZE
-          );
+        case STATES.DEAD:
+          ctx.fillStyle = STATES.DEAD;
+          ctx.fillRect(block.x_position, block.y_position, ANT_SIZE, ANT_SIZE);
           break;
-        case ESTADOS.BACKGROUND:
-          doc_ctx.fillStyle = ESTADOS.BACKGROUND;
-          doc_ctx.fillRect(
-            cuadro.x_position,
-            cuadro.y_position,
-            ANT_SIZE,
-            ANT_SIZE
-          );
+        case STATES.BACKGROUND:
+          ctx.fillStyle = STATES.BACKGROUND;
+          ctx.fillRect(block.x_position, block.y_position, ANT_SIZE, ANT_SIZE);
 
-          // lineas
-          doc_ctx.strokeStyle = "rgb(245, 245, 245)";
-          doc_ctx.strokeRect(
-            cuadro.x_position,
-            cuadro.y_position,
+          // lines
+          ctx.strokeStyle = "rgb(245, 245, 245)";
+          ctx.strokeRect(
+            block.x_position,
+            block.y_position,
             ANT_SIZE,
             ANT_SIZE
           );
@@ -203,174 +188,172 @@ class Game {
 
   /**
    * Searches and changes the status of a block in the grid.
-   * @param {number} numero_de_cuadrito posicion del cuadrito al que se le va a cambiar el estado
-   * @param {string} estado nuevo estado para el cuadrito
+   * @param {number} blockNumber posicion del cuadrito al que se le va a cambiar el estado
+   * @param {string} state nuevo estado para el cuadrito
    */
-  changeStateOfCuadrito(numero_de_cuadrito, estado) {
-    const newCuadritos = this.cuadritos.map((cuadrito) => {
-      if (cuadrito.number === numero_de_cuadrito) {
-        cuadrito.changeState(estado);
-        return cuadrito;
+  changeStateOfBlock(blockNumber, state) {
+    const newGrid = this.grid.map((block) => {
+      if (block.number === blockNumber) {
+        block.changeState(state);
+        return block;
       }
 
-      return cuadrito;
+      return block;
     });
 
-    this.cuadritos = newCuadritos;
+    this.grid = newGrid;
   }
 
   /**
-   * se encarga de ejecutar las generaciones
+   * Charge to the next generation
    */
   nextGeneration() {
     /** @type {Block} */
-    let hormiga = this.cuadritos.find(
-      (cuadro) => cuadro.state === ESTADOS.VIVO
+    const ant = this.grid.find((cuadro) => cuadro.state === STATES.LIVE);
+
+    // calculates the new direction
+    const newDireccion = this.normalizeDegrees(
+      ant.onBackground
+        ? // if the ant is on a white block
+          ant.direction - 90
+        : // if the ant is on a black block
+          ant.direction + 90
     );
 
-    // calcula la nueva dirección
-    const newDireccion = this.normalizarGrados(
-      hormiga.onBackground
-        ? // si la hormiga esta sobre blanco
-          hormiga.direction - 90
-        : // si la hormiga esta sobre negro
-          hormiga.direction + 90
-    );
-
-    // busca la nueva posicion de la hormiga
     /** @type {Block} */
-    const nextHormiga = this.buscarSiguienteHormiga(
+    const nextAntPosition = this.findNextAntPosition(
       newDireccion,
-      hormiga.x_position,
-      hormiga.y_position
+      ant.x_position,
+      ant.y_position
     );
 
-    // si no la encuentra finaliza
-    if (!nextHormiga) {
+    if (!nextAntPosition) {
       this.togglePausa();
       return;
     }
 
-    // ejecuta la logica de movimiento y la carga a la lista de cuadritos
-    this.cuadritos = this.logicaDeMovimiento(
-      hormiga,
-      nextHormiga,
-      newDireccion
-    );
+    // executes the motion logic and loads it to the grid
+    this.grid = this.motionLogic(ant, nextAntPosition, newDireccion);
 
-    this.generacion++;
-    doc_generacion.textContent = `${this.generacion}`;
+    this.generation++;
+    generation.textContent = `${this.generation}`;
   }
 
   /**
-   * Funcion que normaliza angulos entro 0 y 360
-   * @param {number} angulo Valor que se quiera normalizar a grados entre 0 y 360
-   * @returns {number}
+   * Function that normalizes angles between 0 and 360
+   * @param {number} angle Value to be normalized to degrees between 0 and 360
+   * @returns {number} normalizeDegree
    */
-  normalizarGrados(angulo) {
-    angulo = angulo % 360;
-    if (angulo < 0) {
-      angulo += 360;
+  normalizeDegrees(angle) {
+    angle = angle % 360;
+    if (angle < 0) {
+      angle += 360;
     }
-    return angulo;
+    return angle;
   }
 
   /**
-   * Funcion que mapea la posicion de la hormiga
-   * @param {Block} hormiga
-   * @param {Block} nextHormiga
-   * @param {number} direccion
-   * @returns {Array<Block>}
+   * Function that maps the position of the ant according to the rules.
+   * @param {Block} ant current ant information
+   * @param {Block} nextAnt next ant position information
+   * @param {number} direction new direction to where the ant is looking at
+   * @returns {Array<Block>} grid with the new calculated positions
    */
-  logicaDeMovimiento(hormiga, nextHormiga, direccion) {
-    return this.cuadritos.map((cuadro) => {
-      // si es la hormiga
-      if (cuadro.number === hormiga.number) {
-        // si la hormiga está sobre blanco se convierte en negro, sino vuelve a blanco
-        cuadro.onBackground
-          ? (cuadro.state = ESTADOS.MUERTO)
-          : (cuadro.state = ESTADOS.BACKGROUND);
+  motionLogic(ant, nextAnt, direction) {
+    return this.grid.map((block) => {
+      // Ant
+      if (block.number === ant.number) {
+        // if the ant is on white, it becomes black, otherwise it returns to white.
+        block.onBackground
+          ? (block.state = STATES.DEAD)
+          : (block.state = STATES.BACKGROUND);
       }
 
-      // la siguiente posicion de la hormiga
-      if (cuadro.number === nextHormiga.number) {
-        // si la siguiente posicion es negro cambia el estado onBackground a false, sino true
-        cuadro.state === ESTADOS.MUERTO
-          ? (cuadro.onBackground = false)
-          : (cuadro.onBackground = true);
+      // nextAnt
+      if (block.number === nextAnt.number) {
+        // if the next position is black change the onBackground status to false, otherwise true
+        block.state === STATES.DEAD
+          ? (block.onBackground = false)
+          : (block.onBackground = true);
 
-        cuadro.state = ESTADOS.VIVO;
-        cuadro.direction = direccion;
+        block.state = STATES.LIVE;
+        block.direction = direction;
       }
 
-      return cuadro;
+      return block;
     });
   }
 
   /**
-   * Funcion que calcula la siguiente posicion de la hormiga segun su direccion
-   * @param {number} direccion direccion de la hormiga
-   * @param {number} x posicion "x" actual de la hormiga
-   * @param {number} y posicion "y" actual de la hormiga
-   * @returns Cuadrito
+   * Function that calculates the next position of the ant according to its direction
+   * @param {number} direction ant direction
+   * @param {number} x current "x" position of the ant
+   * @param {number} y current "y" position of the ant
+   * @returns {Block} next ant position
    */
-  buscarSiguienteHormiga(direccion, x, y) {
-    switch (direccion) {
-      case DIRECTIONS.ARRIBA:
-        return this.buscarPorCoordenadas(x, y - ANT_SIZE);
-      case DIRECTIONS.DERECHA:
-        return this.buscarPorCoordenadas(x + ANT_SIZE, y);
-      case DIRECTIONS.ABAJO:
-        return this.buscarPorCoordenadas(x, y + ANT_SIZE);
-      case DIRECTIONS.IZQUIERDA:
-        return this.buscarPorCoordenadas(x - ANT_SIZE, y);
+  findNextAntPosition(direction, x, y) {
+    switch (direction) {
+      case DIRECTIONS.UP:
+        return this.findByCoordinates(x, y - ANT_SIZE);
+      case DIRECTIONS.RIGHT:
+        return this.findByCoordinates(x + ANT_SIZE, y);
+      case DIRECTIONS.DOWN:
+        return this.findByCoordinates(x, y + ANT_SIZE);
+      case DIRECTIONS.LEFT:
+        return this.findByCoordinates(x - ANT_SIZE, y);
     }
   }
 
   /**
-   * Funcion que busca un cuadrito por sus coordenadas
-   * @param {number} x Posición x
-   * @param {number} y Posición y
-   * @returns {Block}
+   * Function that searches for a square by its coordinates.
+   * @param {number} x x position
+   * @param {number} y y position
+   * @returns {Block} block at position x y
    */
-  buscarPorCoordenadas(x, y) {
-    return this.cuadritos.find(
+  findByCoordinates(x, y) {
+    return this.grid.find(
       (cuadro) => cuadro.x_position === x && cuadro.y_position === y
     );
   }
 
+  /**
+   * Function that exchanges the isPause property
+   */
   togglePausa() {
-    this.isPausa = !this.isPausa;
+    this.isStop = !this.isStop;
 
-    if (!this.isPausa) {
-      btnPausa.innerHTML = "Pausar";
+    if (!this.isStop) {
+      btnStop.innerHTML = "Pause";
       window.requestAnimationFrame(() => game.gameLoop());
     }
 
-    if (this.isPausa) {
-      btnPausa.innerHTML = "Iniciar";
+    if (this.isStop) {
+      btnStop.innerHTML = "Start";
     }
   }
 
+  /**
+   * Function that returns the game to its initial state.
+   */
   clearAll() {
-    this.isPausa = true;
-    btnPausa.innerHTML = "Iniciar";
+    this.isStop = true;
+    btnStop.innerHTML = "Start";
 
-    this.generacion = 0;
-    this.isPausa = true;
-    doc_generacion.textContent = "0";
+    this.generation = 0;
+    this.isStop = true;
+    generation.textContent = "0";
 
     setTimeout(() => {
-      doc_ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
       this.initialGrill();
-      this.changeStateOfCuadrito(this.calculateMiddle(), ESTADOS.VIVO);
-      this.pintarCuadros();
+      this.changeStateOfBlock(this.calculateMiddle(), STATES.LIVE);
+      this.drawBlocks();
     }, 50);
   }
 
   /**
-   * Funcion que calcula la posicion del cuadro central
-   * @returns {number}
+   * Function that calculates the position of the central block.
+   * @returns {number} central block number
    */
   calculateMiddle() {
     return Math.floor(Math.pow(CANVAS_SIZE / ANT_SIZE, 2) / 2);
@@ -380,13 +363,13 @@ class Game {
 const game = new Game();
 
 game.initialGrill();
-game.changeStateOfCuadrito(game.calculateMiddle(), ESTADOS.VIVO);
+game.changeStateOfBlock(game.calculateMiddle(), STATES.LIVE);
 
 function procesarDown(evt) {
   switch (evt.code) {
     case "ArrowUp":
       game.nextGeneration();
-      game.pintarCuadros();
+      game.drawBlocks();
       break;
   }
 }
@@ -394,23 +377,23 @@ function procesarDown(evt) {
 const onRangeSizeChange = (value) => {
   if (Math.floor((value * ANT_SIZE) % 2) !== 0) {
     game.clearAll();
-    doc_rangeOutputSize.innerHTML = value;
+    rangeOutputSize.innerHTML = value;
     CANVAS_SIZE = value * ANT_SIZE;
-    doc_canvas.width = value * ANT_SIZE;
-    doc_canvas.height = value * ANT_SIZE;
+    canvas.width = value * ANT_SIZE;
+    canvas.height = value * ANT_SIZE;
 
     game.initialGrill();
-    game.changeStateOfCuadrito(game.calculateMiddle(), ESTADOS.VIVO);
-    game.pintarCuadros();
+    game.changeStateOfBlock(game.calculateMiddle(), STATES.LIVE);
+    game.drawBlocks();
   }
 };
 
 const onRangeTimeChange = (value) => {
-  TIEMPO_POR_FRAME = MAX_FRAME_TIME - value;
-  doc_rangeOutputTime.innerHTML = String(MAX_FRAME_TIME - value);
+  FRAME_TIME = MAX_FRAME_TIME - value;
+  rangeOutputTime.innerHTML = String(MAX_FRAME_TIME - value);
 };
 
 btnClear.addEventListener("click", () => game.clearAll());
-btnPausa.addEventListener("click", () => game.togglePausa());
+btnStop.addEventListener("click", () => game.togglePausa());
 document.addEventListener("keydown", procesarDown);
 window.requestAnimationFrame(() => game.gameLoop());
