@@ -1,7 +1,5 @@
 // @ts-check
 
-const MAX_FRAME_TIME = 201;
-const ANT_SIZE = 15;
 const STATES = {
   LIVE: "rgb(255, 0, 0)",
   DEAD: "rgb(0, 0, 0)",
@@ -33,23 +31,13 @@ const canvas = document.querySelector("canvas"),
   /** @type {HTMLElement} */
   rangeOutputTime = document.getElementById("rangeSpanTime");
 
-/** @type {number} */
-var CANVAS_SIZE = 435;
-canvas.width = CANVAS_SIZE;
-canvas.height = CANVAS_SIZE;
-rangeOutputSize.innerHTML = String(CANVAS_SIZE / 15);
-
-/** @type {number} */
-var FRAME_TIME = 100;
-rangeOutputTime.innerHTML = String(FRAME_TIME);
-
 class Block {
   /**
    * Block builder
    * @param {number} x Position x on the grid
    * @param {number} y Position y on the grid
    * @param {number} num Number assigned to the block
-   * @param {number} size Block size
+   * @param {number} [size=15] Block size
    */
   constructor(x, y, num, size) {
     /** @type {number} */
@@ -59,7 +47,7 @@ class Block {
     /** @type {number} */
     this.number = num;
     /** @type {number} */
-    this.size = size;
+    this.size = size ? size : 15;
     /** @type {number} */
     this.direction = DIRECTIONS.UP;
     /** @type {string} */
@@ -82,14 +70,32 @@ class Block {
  */
 class Game {
   constructor() {
-    /** @type {Block[]} */
-    this.grid = [];
+    /** @constant {number} */
+    this.BLOCK_SIZE = 15;
+    /** @constant {number} */
+    this.MAX_FRAME_SPEED = 201;
 
     /** @type {number} */
+    this.canvas_size = 435;
+    /** @type {number} */
+    this.frame_speed = 100;
+    /** @type {number} */
+    this.middle_of_the_grid = 0;
+    /** @type {number} */
     this.generation = 0;
-
+    /** @type {Block[]} */
+    this.grid = [];
     /** @type {boolean} */
     this.isStop = true;
+
+    rangeOutputSize.innerHTML = String(this.canvas_size / this.BLOCK_SIZE);
+    rangeOutputTime.innerHTML = String(this.frame_speed);
+
+    canvas.width = this.canvas_size;
+    canvas.height = this.canvas_size;
+
+    this.chargeGrid();
+    this.initAnt();
   }
 
   /**
@@ -101,54 +107,40 @@ class Game {
       setTimeout(() => {
         this.nextGeneration();
         window.requestAnimationFrame(() => this.gameLoop());
-      }, FRAME_TIME);
+      }, this.frame_speed);
     }
   }
 
   /**
    * Function that draws the grid and loads them into the game list.
    */
-  initialGrill() {
+  chargeGrid() {
     // reset the grid
     this.grid = [];
-    let columns = [],
-      rows = [],
-      counter = 0;
+    let counter = 0;
     ctx.strokeStyle = STATES.BACKGROUND;
+    const cantBlocks = this.canvas_size / this.BLOCK_SIZE;
     ctx.lineWidth = 1;
 
-    // Charge columns
-    columns.push(0);
-    for (let i = ANT_SIZE; i < CANVAS_SIZE; i += ANT_SIZE) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, CANVAS_SIZE);
-      ctx.stroke();
-      columns.push(i);
-    }
-    ctx.closePath();
+    for (let y = 0; y < cantBlocks; y++) {
+      for (let x = 0; x < cantBlocks; x++) {
+        const blocks = new Block(
+          x * this.BLOCK_SIZE,
+          y * this.BLOCK_SIZE,
+          counter
+        );
 
-    // Charge rows
-    rows.push(0);
-    for (let i = ANT_SIZE; i < CANVAS_SIZE; i += ANT_SIZE) {
-      ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(CANVAS_SIZE, i);
-      ctx.stroke();
-      rows.push(i);
-    }
-    ctx.closePath();
-
-    // Combines rows and columns
-    for (let y = 0; y < rows.length; y++) {
-      for (let x = 0; x < columns.length; x++) {
-        const blocks = new Block(columns[x], rows[y], counter, ANT_SIZE);
         counter++;
         this.grid.push(blocks);
       }
     }
 
-    // console.log(this.cuadritos);
+    // set the middle of the grid
+    this.middle_of_the_grid = Math.floor(
+      Math.pow(this.canvas_size / this.BLOCK_SIZE, 2) / 2
+    );
+
+    // console.log(this.grid);
   }
 
   /**
@@ -159,25 +151,48 @@ class Game {
       switch (block.state) {
         case STATES.LIVE:
           ctx.fillStyle = STATES.LIVE;
-          ctx.fillRect(block.x_position, block.y_position, ANT_SIZE, ANT_SIZE);
+          ctx.fillRect(
+            block.x_position,
+            block.y_position,
+            this.BLOCK_SIZE,
+            this.BLOCK_SIZE
+          );
           // console.log(JSON.stringify(cuadro, null, 4));
           break;
         case STATES.DEAD:
           ctx.fillStyle = STATES.DEAD;
-          ctx.fillRect(block.x_position, block.y_position, ANT_SIZE, ANT_SIZE);
+          ctx.fillRect(
+            block.x_position,
+            block.y_position,
+            this.BLOCK_SIZE,
+            this.BLOCK_SIZE
+          );
           break;
         case STATES.BACKGROUND:
           ctx.fillStyle = STATES.BACKGROUND;
-          ctx.fillRect(block.x_position, block.y_position, ANT_SIZE, ANT_SIZE);
+          ctx.fillRect(
+            block.x_position,
+            block.y_position,
+            this.BLOCK_SIZE,
+            this.BLOCK_SIZE
+          );
 
           // lines
           ctx.strokeStyle = "rgb(245, 245, 245)";
           ctx.strokeRect(
             block.x_position,
             block.y_position,
-            ANT_SIZE,
-            ANT_SIZE
+            this.BLOCK_SIZE,
+            this.BLOCK_SIZE
           );
+
+          /* ctx.fillStyle = "#000";
+          ctx.font = "7px Arial";
+          ctx.fillText(
+            String(block.number),
+            block.x_position,
+            block.y_position - 8
+          ); */
           break;
 
         default:
@@ -187,21 +202,14 @@ class Game {
   }
 
   /**
-   * Searches and changes the status of a block in the grid.
-   * @param {number} blockNumber posicion del cuadrito al que se le va a cambiar el estado
-   * @param {string} state nuevo estado para el cuadrito
+   * Funtion that initialize the ant
    */
-  changeStateOfBlock(blockNumber, state) {
-    const newGrid = this.grid.map((block) => {
-      if (block.number === blockNumber) {
-        block.changeState(state);
-        return block;
+  initAnt() {
+    this.grid.map((block) => {
+      if (block.number === this.middle_of_the_grid) {
+        block.changeState(STATES.LIVE);
       }
-
-      return block;
     });
-
-    this.grid = newGrid;
   }
 
   /**
@@ -294,13 +302,13 @@ class Game {
   findNextAntPosition(direction, x, y) {
     switch (direction) {
       case DIRECTIONS.UP:
-        return this.findByCoordinates(x, y - ANT_SIZE);
+        return this.findByCoordinates(x, y - this.BLOCK_SIZE);
       case DIRECTIONS.RIGHT:
-        return this.findByCoordinates(x + ANT_SIZE, y);
+        return this.findByCoordinates(x + this.BLOCK_SIZE, y);
       case DIRECTIONS.DOWN:
-        return this.findByCoordinates(x, y + ANT_SIZE);
+        return this.findByCoordinates(x, y + this.BLOCK_SIZE);
       case DIRECTIONS.LEFT:
-        return this.findByCoordinates(x - ANT_SIZE, y);
+        return this.findByCoordinates(x - this.BLOCK_SIZE, y);
     }
   }
 
@@ -344,26 +352,15 @@ class Game {
     generation.textContent = "0";
 
     setTimeout(() => {
-      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-      this.initialGrill();
-      this.changeStateOfBlock(this.calculateMiddle(), STATES.LIVE);
+      ctx.clearRect(0, 0, this.canvas_size, this.canvas_size);
+      this.chargeGrid();
+      this.initAnt();
       this.drawBlocks();
     }, 50);
-  }
-
-  /**
-   * Function that calculates the position of the central block.
-   * @returns {number} central block number
-   */
-  calculateMiddle() {
-    return Math.floor(Math.pow(CANVAS_SIZE / ANT_SIZE, 2) / 2);
   }
 }
 
 const game = new Game();
-
-game.initialGrill();
-game.changeStateOfBlock(game.calculateMiddle(), STATES.LIVE);
 
 function procesarDown(evt) {
   switch (evt.code) {
@@ -375,22 +372,22 @@ function procesarDown(evt) {
 }
 
 const onRangeSizeChange = (value) => {
-  if (Math.floor((value * ANT_SIZE) % 2) !== 0) {
+  if (Math.floor((value * game.BLOCK_SIZE) % 2) !== 0) {
     game.clearAll();
     rangeOutputSize.innerHTML = value;
-    CANVAS_SIZE = value * ANT_SIZE;
-    canvas.width = value * ANT_SIZE;
-    canvas.height = value * ANT_SIZE;
 
-    game.initialGrill();
-    game.changeStateOfBlock(game.calculateMiddle(), STATES.LIVE);
-    game.drawBlocks();
+    game.canvas_size = value * game.BLOCK_SIZE;
+    canvas.width = value * game.BLOCK_SIZE;
+    canvas.height = value * game.BLOCK_SIZE;
+
+    game.chargeGrid();
+    game.initAnt();
   }
 };
 
 const onRangeTimeChange = (value) => {
-  FRAME_TIME = MAX_FRAME_TIME - value;
-  rangeOutputTime.innerHTML = String(MAX_FRAME_TIME - value);
+  game.frame_speed = game.MAX_FRAME_SPEED - value;
+  rangeOutputTime.innerHTML = String(game.MAX_FRAME_SPEED - value);
 };
 
 btnClear.addEventListener("click", () => game.clearAll());
