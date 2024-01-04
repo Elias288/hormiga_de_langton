@@ -1,25 +1,14 @@
 // @ts-check
 
 import Block, { STATES, DIRECTIONS } from "./Block.js";
-
-/** @type {HTMLCanvasElement} */
-export const canvas = document.querySelector("canvas"),
-  /** @type {CanvasRenderingContext2D } */
-  ctx = canvas.getContext("2d"),
-  /** @type {HTMLElement} */
-  generation = document.getElementById("generation"),
-  /** @type {HTMLElement} */
-  btnStop = document.getElementById("btnStop"),
-  /** @type {HTMLElement} */
-  btnClear = document.getElementById("btnClear"),
-  /** @type {HTMLElement} */
-  rangeSize = document.getElementById("range_size"),
-  /** @type {HTMLElement} */
-  rangeOutputSize = document.getElementById("rangeSpanSize"),
-  /** @type {HTMLElement} */
-  range_time = document.getElementById("range_time"),
-  /** @type {HTMLElement} */
-  rangeOutputTime = document.getElementById("rangeSpanTime");
+import {
+  outRangeSize,
+  outRangeTime,
+  canvas,
+  ctx,
+  generation,
+  btnStop,
+} from "./Elements.js";
 
 /**
  * @class
@@ -44,8 +33,8 @@ class Game {
     /** @type {boolean} */
     this.isStop = true;
 
-    rangeOutputSize.innerHTML = String(this.canvas_size / this.BLOCK_SIZE);
-    rangeOutputTime.innerHTML = String(this.frame_speed);
+    outRangeSize.innerHTML = String(this.canvas_size / this.BLOCK_SIZE);
+    outRangeTime.innerHTML = String(this.frame_speed);
 
     canvas.width = this.canvas_size;
     canvas.height = this.canvas_size;

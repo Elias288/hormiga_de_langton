@@ -1,28 +1,23 @@
 // @ts-check
 
-import Game, {
+import {
   btnClear,
   btnStop,
   canvas,
-  rangeOutputSize,
-  rangeOutputTime,
-} from "./GameEngine.js";
+  inRangeSize,
+  inRangeTime,
+  outRangeSize,
+  outRangeTime,
+} from "./Elements.js";
+import Game from "./GameEngine.js";
 
 const game = new Game();
 
-function procesarDown(evt) {
-  switch (evt.code) {
-    case "ArrowUp":
-      game.nextGeneration();
-      game.drawBlocks();
-      break;
-  }
-}
-
-const onRangeSizeChange = (value) => {
+const onRangeSizeChange = () => {
+  const value = inRangeSize.value;
   if (Math.floor((value * game.BLOCK_SIZE) % 2) !== 0) {
     game.clearAll();
-    rangeOutputSize.innerHTML = value;
+    outRangeSize.innerHTML = value;
 
     game.canvas_size = value * game.BLOCK_SIZE;
     canvas.width = value * game.BLOCK_SIZE;
@@ -33,13 +28,25 @@ const onRangeSizeChange = (value) => {
   }
 };
 
-const onRangeTimeChange = (value) => {
+const onRangeTimeChange = () => {
+  const value = inRangeTime.value;
   game.frame_speed = game.MAX_FRAME_SPEED - value;
-  rangeOutputTime.innerHTML = String(game.MAX_FRAME_SPEED - value);
+  outRangeTime.innerHTML = String(game.MAX_FRAME_SPEED - value);
 };
+
+function procesarDown(evt) {
+  switch (evt.code) {
+    case "ArrowUp":
+      game.nextGeneration();
+      game.drawBlocks();
+      break;
+  }
+}
 
 btnClear.addEventListener("click", () => game.clearAll());
 btnStop.addEventListener("click", () => game.togglePausa());
-document.addEventListener("keydown", procesarDown);
+inRangeSize.oninput = onRangeSizeChange;
+inRangeTime.oninput = onRangeTimeChange;
 
+document.addEventListener("keydown", procesarDown);
 window.requestAnimationFrame(() => game.gameLoop());
